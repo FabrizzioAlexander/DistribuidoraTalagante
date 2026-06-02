@@ -33,7 +33,6 @@ El enfoque principal fue construir un backend robusto con APIs REST que puedan s
 
 - APIs REST completas para productos, clientes, pedidos e inventario.
 - Gestión de stock con control de entradas y salidas.
-- Diferenciación de precios según tipo de cliente (mayorista y minorista).
 - Sistema de verificación de usuarios por email y SMS.
 - Panel de administración avanzado.
 - Carga y gestión de imágenes de productos.
