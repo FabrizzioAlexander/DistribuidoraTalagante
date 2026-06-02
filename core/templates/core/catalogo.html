@@ -1,0 +1,119 @@
+﻿Aquí tienes el catalogo.html completo corregido y optimizado:
+HTML{% extends "core/base.html" %}
+{% load static humanize %}
+
+{% block title %}Catálogo — Distribuidora Talagante{% endblock %}
+
+{% block content %}
+<div class="catalogo">
+  <main class="container">
+
+    <form method="get" class="filters mb-4">
+      <div class="row g-3">
+        <div class="col-auto">
+          <select name="categoria" class="form-select">
+            <option value="">Todas las categorías</option>
+            {% for c in categorias %}
+              <option value="{{ c }}" {% if request.GET.categoria == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <input type="number" min="0" step="100" name="precio_max" value="{{ request.GET.precio_max }}" 
+                 placeholder="Precio máximo" class="form-control">
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" type="submit">Filtrar</button>
+        </div>
+      </div>
+    </form>
+
+    <section class="product-grid">
+      {% if productos %}
+        {% for p in productos %}
+          <article class="product-card">
+            <div class="product-media">
+              {% if p.imagen %}
+                <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}">
+              {% else %}
+                <img src="{% static 'core/img/placeholder.png' %}" alt="{{ p.nombre }}">
+              {% endif %}
+            </div>
+
+            <div class="product-body">
+              <h3 class="product-title">{{ p.nombre }}</h3>
+              <div class="product-cat text-muted small">{{ p.categoria }}</div>
+
+              <!-- Precio -->
+              <div class="product-price fs-4 fw-bold text-success">
+                {% if p.es_granel %}
+                  ${{ p.precio|floatformat:0|intcomma }} <small class="text-muted">/ kg</small>
+                {% else %}
+                  ${{ p.precio|floatformat:0|intcomma }}
+                {% endif %}
+              </div>
+
+              <!-- Stock -->
+              <div class="mb-3">
+                {% if p.stock > 0 %}
+                  <span class="badge bg-success fs-6">
+                    Stock: {{ p.stock|floatformat:2 }} 
+                    {% if p.es_granel %}kg{% else %}{{ p.get_unidad_medida_display }}{% endif %}
+                  </span>
+                {% else %}
+                  <span class="badge bg-danger fs-6">Sin stock</span>
+                {% endif %}
+              </div>
+
+              <!-- FORMULARIO - VERSIÓN CORREGIDA -->
+              <form action="{% url 'add_to_carrito' p.id %}" method="post" class="mt-auto">
+                {% csrf_token %}
+                
+                <div class="d-flex gap-2 align-items-center mb-3">
+                  <label class="fw-bold">Cantidad:</label>
+                  
+                  {% if p.es_granel %}
+                    <!-- PRODUCTO A GRANEL -->
+                    <input type="number" 
+                           name="cantidad" 
+                           value="1.0" 
+                           min="0.1" 
+                           step="0.1"           <!-- ← Esto hace que suba de 0.1 en 0.1 -->
+                           class="form-control w-50 text-center"
+                           {% if p.stock <= 0 %}disabled{% endif %}>
+                    <small class="text-muted ms-1">kg</small>
+                  {% else %}
+                    <!-- PRODUCTO NORMAL -->
+                    <input type="number" 
+                           name="cantidad" 
+                           value="1" 
+                           min="1" 
+                           step="1" 
+                           class="form-control w-50 text-center"
+                           {% if p.stock <= 0 %}disabled{% endif %}>
+                    <small class="text-muted ms-1">un</small>
+                  {% endif %}
+                </div>
+
+                {% if p.stock > 0 %}
+                  <button type="submit" class="btn btn-primary w-100">
+                    Añadir al carrito
+                  </button>
+                {% else %}
+                  <button type="button" class="btn btn-secondary w-100" disabled>
+                    Sin stock
+                  </button>
+                {% endif %}
+              </form>
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="text-center py-5">
+          <h3>No hay productos que coincidan con tu búsqueda</h3>
+        </div>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
